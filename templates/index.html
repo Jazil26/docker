@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System and Docker Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>System and Docker Manager</h1>
+    <button onclick="fetchSystemInfo()">Get System Info</button>
+    <pre id="systemInfo"></pre>
+
+    <h2>Docker Container Management</h2>
+    <input type="text" id="imageName" placeholder="Docker Image Name">
+    <input type="text" id="hostPort" placeholder="Host Port (optional)">
+    <button onclick="runDockerContainer()">Run Container</button>
+    <pre id="dockerResult"></pre>
+
+    <script>
+        function fetchSystemInfo() {
+            fetch('/system_info')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('systemInfo').innerText = JSON.stringify(data, null, 2);
+                });
+        }
+
+        function runDockerContainer() {
+            const imageName = document.getElementById('imageName').value;
+            const hostPort = document.getElementById('hostPort').value;
+            fetch('/docker', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ image_name: imageName, host_port: hostPort }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('dockerResult').innerText = JSON.stringify(data, null, 2);
+            });
+        }
+    </script>
+</body>
+</html>
