@@ -8,8 +8,9 @@
 </head>
 <body>
     <h1>System and Docker Manager</h1>
+
     <button onclick="fetchSystemInfo()">Get System Info</button>
-    <pre id="systemInfo"></pre>
+    <ul id="systemInfo"></ul>  <!-- Changed from <pre> to <ul> for list display -->
 
     <h2>Docker Container Management</h2>
     <input type="text" id="imageName" placeholder="Docker Image Name">
@@ -22,24 +23,46 @@
             fetch('/system_info')
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('systemInfo').innerText = JSON.stringify(data, null, 2);
-                });
+                    const systemInfoElement = document.getElementById("systemInfo");
+                    systemInfoElement.innerHTML = "";  // Clear previous data
+
+                    // Convert OS info to list
+                    const osInfo = data.os_info.split(", ");
+                    osInfo.forEach(info => {
+                        const li = document.createElement("li");
+                        li.textContent = info;
+                        systemInfoElement.appendChild(li);
+                    });
+
+                    // Convert hardware info to list
+                    Object.entries(data.hardware_info).forEach(([key, value]) => {
+                        const li = document.createElement("li");
+                        li.textContent = `${key}: ${value}`;
+                        systemInfoElement.appendChild(li);
+                    });
+
+                    // Add network test result
+                    const networkLi = document.createElement("li");
+                    networkLi.textContent = `Network Test: ${data.network_test}`;
+                    systemInfoElement.appendChild(networkLi);
+                })
+                .catch(error => console.error("Error fetching system info:", error));
         }
 
         function runDockerContainer() {
             const imageName = document.getElementById('imageName').value;
             const hostPort = document.getElementById('hostPort').value;
+            
             fetch('/docker', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ image_name: imageName, host_port: hostPort }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image_name: imageName, host_port: hostPort })
             })
             .then(response => response.json())
             .then(data => {
                 document.getElementById('dockerResult').innerText = JSON.stringify(data, null, 2);
-            });
+            })
+            .catch(error => console.error("Error running Docker container:", error));
         }
     </script>
 </body>
